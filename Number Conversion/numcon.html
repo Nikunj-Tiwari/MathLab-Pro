@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Base Converter</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Number Base Converter</h1>
+        <div class="form-group">
+            <label for="number">Enter Number:</label>
+            <input type="text" id="number" placeholder="Enter number">
+        </div>
+        <div class="form-group">
+            <label for="base">Select Base:</label>
+            <select id="base">
+                <option value="10">Decimal</option>
+                <option value="2">Binary</option>
+                <option value="16">Hexadecimal</option>
+                <option value="8">Octal</option>
+            </select>
+        </div>
+        <button onclick="convertNumber()">Convert</button>
+        <div class="results">
+            <p id="decimal"></p>
+            <p id="binary"></p>
+            <p id="hexadecimal"></p>
+            <p id="octal"></p>
+        </div>
+    </div>
+    <script src="scripts.js"></script>
+</body>
+</html>

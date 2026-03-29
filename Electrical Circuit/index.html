@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Circuit Simulator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.6.0/fabric.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    #toolbar {
+      background: #2c3e50;
+      color: white;
+      padding: 10px;
+      display: flex;
+      gap: 10px;
+    }
+    #toolbar button {
+      padding: 10px;
+      border: none;
+      background: #3498db;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #toolbar button:hover {
+      background: #2980b9;
+    }
+    #canvas-container {
+      flex-grow: 1;
+      background: #ecf0f1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    canvas {
+      border: 1px solid #bdc3c7;
+    }
+  </style>
+</head>
+<body>
+  <div id="toolbar">
+    <button onclick="addResistor()">Add Resistor</button>
+    <button onclick="addVoltageSource()">Add Voltage Source</button>
+    <button onclick="addWire()">Add Wire</button>
+    <button onclick="simulateCircuit()">Simulate Circuit</button>
+    <button onclick="clearCanvas()">Clear Canvas</button>
+  </div>
+  <div id="canvas-container">
+    <canvas id="circuitCanvas" width="1200" height="600"></canvas>
+  </div>
+
+  <script>
+    const canvas = new fabric.Canvas('circuitCanvas', { backgroundColor: '#ffffff' });
+    let componentId = 1;
+
+    // Function to add a resistor
+    function addResistor() {
+      const rect = new fabric.Rect({
+        width: 100,
+        height: 30,
+        fill: '#e74c3c',
+        left: 150,
+        top: 150,
+        originX: 'center',
+        originY: 'center',
+        selectable: true,
+      });
+      const text = new fabric.Text(`R${componentId++}`, {
+        fontSize: 14,
+        originX: 'center',
+        originY: 'center',
+        fill: 'white',
+      });
+      const group = new fabric.Group([rect, text], {
+        left: 150,
+        top: 150,
+        type: 'resistor',
+        resistance: 100, // Default resistance value in Ohms
+      });
+      canvas.add(group);
+    }
+
+    // Function to add a voltage source
+    function addVoltageSource() {
+      const circle = new fabric.Circle({
+        radius: 30,
+        fill: '#3498db',
+        left: 250,
+        top: 150,
+        originX: 'center',
+        originY: 'center',
+      });
+      const text = new fabric.Text(`V${componentId++}`, {
+        fontSize: 14,
+        originX: 'center',
+        originY: 'center',
+        fill: 'white',
+      });
+      const group = new fabric.Group([circle, text], {
+        left: 250,
+        top: 150,
+        type: 'voltage',
+        voltage: 5, // Default voltage value in Volts
+      });
+      canvas.add(group);
+    }
+
+    // Function to add a wire
+    function addWire() {
+      const line = new fabric.Line([50, 50, 200, 50], {
+        stroke: '#2c3e50',
+        strokeWidth: 3,
+        selectable: true,
+        type: 'wire',
+      });
+      canvas.add(line);
+    }
+
+    // Function to simulate the circuit
+    function simulateCircuit() {
+      const components = canvas.getObjects();
+      let simulationData = 'Simulation Results:\n';
+
+      components.forEach(component => {
+        if (component.type === 'resistor') {
+          simulationData += `Resistor: ${component.resistance} Ω\n`;
+        } else if (component.type === 'voltage') {
+          simulationData += `Voltage Source: ${component.voltage} V\n`;
+        } else if (component.type === 'wire') {
+          simulationData += `Wire: Length ${component.width}px\n`;
+        }
+      });
+
+      alert(simulationData);
+    }
+
+    // Function to clear the canvas
+    function clearCanvas() {
+      canvas.clear();
+      canvas.backgroundColor = '#ffffff';
+    }
+  </script>
+</body>
+</html>

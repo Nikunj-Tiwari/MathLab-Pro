@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fourier Series Calculator</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.24.2.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .math {
+            font-size: 1.2em;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .note {
+            font-size: 0.9em;
+            color: #555;
+            text-align: center;
+        }
+        input {
+            margin: 10px;
+            padding: 5px;
+            width: 120px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        #plot {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fourier Series Calculator</h1>
+        <div class="math">
+            General Fourier Series:
+            $$ f(x) = a_0 + \sum_{n=1}^\infty \left[ a_n \cos(nx) + b_n \sin(nx) \right] $$
+        </div>
+        <div>
+            <h3>Enter Function and Parameters:</h3>
+            <label for="function">Function f(x): </label>
+            <input type="text" id="function" value="sin(x) + cos(2x)">
+            <label for="period">Period T: </label>
+            <input type="number" id="period" value="6.28">
+            <label for="terms">Number of Terms n: </label>
+            <input type="number" id="terms" value="5">
+            <button onclick="calculateFourier()">Calculate Fourier Series</button>
+        </div>
+        <div class="result" id="results">
+            <h3>Fourier Coefficients:</h3>
+            <p>Results will be displayed here.</p>
+        </div>
+        <div id="plot"></div>
+    </div>
+
+    <script>
+        // Helper function to parse mathematical input into JavaScript-compatible format
+        function parseMathInput(input) {
+            return input
+                .replace(/sin/g, "Math.sin")
+                .replace(/cos/g, "Math.cos")
+                .replace(/tan/g, "Math.tan")
+                .replace(/exp/g, "Math.exp")
+                .replace(/log/g, "Math.log")
+                .replace(/\^/g, "**"); // Replace ^ with ** for exponentiation
+        }
+
+        // Numerical Integration using Trapezoidal Rule
+        function integrate(fn, a, b, steps = 1000) {
+            const h = (b - a) / steps;
+            let sum = 0;
+            for (let i = 0; i < steps; i++) {
+                const x1 = a + i * h;
+                const x2 = a + (i + 1) * h;
+                sum += (fn(x1) + fn(x2)) / 2 * h;
+            }
+            return sum;
+        }
+
+        // Fourier Coefficients Calculation
+        function calculateFourier() {
+            const funcInput = document.getElementById("function").value;
+            const period = parseFloat(document.getElementById("period").value);
+            const nTerms = parseInt(document.getElementById("terms").value);
+            const T = period;
+
+            // Parse the user input into a JavaScript-compatible function
+            const parsedFunc = parseMathInput(funcInput);
+            const f = new Function("x", `return ${parsedFunc};`);
+
+            // Calculate coefficients
+            const coefficients = [];
+            const a0 = (1 / T) * integrate(x => f(x), -T / 2, T / 2);
+            for (let n = 1; n <= nTerms; n++) {
+                const a_n = (2 / T) * integrate(x => f(x) * Math.cos((2 * Math.PI * n * x) / T), -T / 2, T / 2);
+                const b_n = (2 / T) * integrate(x => f(x) * Math.sin((2 * Math.PI * n * x) / T), -T / 2, T / 2);
+                coefficients.push({ n, a_n: a_n.toFixed(3), b_n: b_n.toFixed(3) });
+            }
+
+            // Render Results
+            const resultDiv = document.getElementById("results");
+            let resultHtml = `<p><b>Constant Term (a<sub>0</sub>):</b> ${a0.toFixed(3)}</p>`;
+            resultHtml += `<table border="1" style="width: 100%; text-align: center;">
+                            <tr>
+                                <th>n</th>
+                                <th>a<sub>n</sub></th>
+                                <th>b<sub>n</sub></th>
+                            </tr>`;
+            coefficients.forEach(coef => {
+                resultHtml += `<tr>
+                                <td>${coef.n}</td>
+                                <td>${coef.a_n}</td>
+                                <td>${coef.b_n}</td>
+                              </tr>`;
+            });
+            resultHtml += "</table>";
+            resultHtml += `<p>Fourier Series: f(x) = ${a0.toFixed(3)} `;
+            coefficients.forEach(coef => {
+                resultHtml += `+ (${coef.a_n})\\cos(${coef.n}x) + (${coef.b_n})\\sin(${coef.n}x) `;
+            });
+            resultHtml += `</p>`;
+            resultDiv.innerHTML = resultHtml;
+
+            // Trigger MathJax to render updated math
+            MathJax.typeset();
+
+            // Plot the Fourier Series Approximation
+            plotFourier(f, coefficients, a0, T);
+        }
+
+        // Plot Fourier Series using Plotly
+        function plotFourier(f, coefficients, a0, T) {
+            const xValues = [];
+            const originalValues = [];
+            const approxValues = [];
+            for (let x = -T; x <= T; x += 0.1) {
+                xValues.push(x);
+                originalValues.push(f(x));
+                let approx = a0;
+                coefficients.forEach(coef => {
+                    const n = coef.n;
+                    approx += coef.a_n * Math.cos((2 * Math.PI * n * x) / T);
+                    approx += coef.b_n * Math.sin((2 * Math.PI * n * x) / T);
+                });
+                approxValues.push(approx);
+            }
+
+            const data = [
+                {
+                    x: xValues,
+                    y: originalValues,
+                    type: "scatter",
+                    mode: "lines",
+                    name: "Original Function"
+                },
+                {
+                    x: xValues,
+                    y: approxValues,
+                    type: "scatter",
+                    mode: "lines",
+                    name: "Fourier Approximation"
+                }
+            ];
+
+            Plotly.newPlot("plot", data, { title: "Fourier Series Approximation" });
+        }
+    </script>
+</body>
+</html>

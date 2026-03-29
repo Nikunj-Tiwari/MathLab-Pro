@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Operations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom right, #e0e0e0, #c0c0c0), url('https://www.transparenttextures.com/patterns/math-squared.png');
+            background-size: cover;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        h2 {
+            color: #2c3e50;
+        }
+        table, th, td {
+            border: 1px solid #2c3e50;
+            border-collapse: collapse;
+            padding: 10px;
+            text-align: center;
+        }
+        input {
+            width: 60px;
+            padding: 5px;
+            text-align: center;
+        }
+        button {
+            margin: 5px 0;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #2c3e50;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #34495e;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .matrix {
+            margin: 10px 0;
+            width: 100%;
+        }
+        .matrix td {
+            padding: 10px;
+            border: 1px solid #34495e;
+            background-color: #ecf0f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Matrix Operations</h1>
+        <form id="matrixForm">
+            <div>
+                <label for="numMatrices">Select Number of Matrices:</label>
+                <select id="numMatrices" onchange="displayMatrices()">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                </select>
+            </div>
+            <div id="matrix1Container">
+                <h2>Matrix 1</h2>
+                <table id="matrix1">
+                    <tr><td><input type="number" step="any"></td></tr>
+                </table>
+                <button type="button" onclick="addRow('matrix1')">Add Row</button>
+                <button type="button" onclick="removeRow('matrix1')">Remove Row</button>
+                <button type="button" onclick="addColumn('matrix1')">Add Column</button>
+                <button type="button" onclick="removeColumn('matrix1')">Remove Column</button>
+            </div>
+            <div id="matrix2Container" style="display: none;">
+                <h2>Matrix 2</h2>
+                <table id="matrix2">
+                    <tr><td><input type="number" step="any"></td></tr>
+                </table>
+                <button type="button" onclick="addRow('matrix2')">Add Row</button>
+                <button type="button" onclick="removeRow('matrix2')">Remove Row</button>
+                <button type="button" onclick="addColumn('matrix2')">Add Column</button>
+                <button type="button" onclick="removeColumn('matrix2')">Remove Column</button>
+            </div>
+            <br>
+            <div>
+                <label for="operations">Select Operation:</label>
+                <select id="operations">
+                    <option value="add">Addition</option>
+                    <option value="subtract">Subtraction</option>
+                    <option value="multiply">Multiplication</option>
+                    <option value="determinant">Determinant</option>
+                    <option value="inverse">Inverse</option>
+                </select>
+            </div>
+            <br>
+            <button type="button" onclick="performOperations()">Perform Operation</button>
+        </form>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.5.0/math.min.js"></script>
+    <script>
+        function displayMatrices() {
+            const numMatrices = document.getElementById('numMatrices').value;
+            document.getElementById('matrix2Container').style.display = numMatrices === "2" ? 'block' : 'none';
+        }
+
+        function addRow(tableId) {
+            const table = document.getElementById(tableId);
+            const row = table.insertRow();
+            for (let i = 0; i < table.rows[0].cells.length; i++) {
+                const cell = row.insertCell();
+                cell.innerHTML = '<input type="number" step="any">';
+            }
+        }
+
+        function removeRow(tableId) {
+            const table = document.getElementById(tableId);
+            if (table.rows.length > 1) {
+                table.deleteRow(-1);
+            }
+        }
+
+        function addColumn(tableId) {
+            const table = document.getElementById(tableId);
+            for (let i = 0; i < table.rows.length; i++) {
+                const cell = table.rows[i].insertCell();
+                cell.innerHTML = '<input type="number" step="any">';
+            }
+        }
+
+        function removeColumn(tableId) {
+            const table = document.getElementById(tableId);
+            if (table.rows[0].cells.length > 1) {
+                for (let i = 0; i < table.rows.length; i++) {
+                    table.rows[i].deleteCell(-1);
+                }
+            }
+        }
+
+        function getMatrix(tableId) {
+            const table = document.getElementById(tableId);
+            const matrix = [];
+            for (let i = 0; i < table.rows.length; i++) {
+                const row = [];
+                for (let j = 0; j < table.rows[i].cells.length; j++) {
+                    row.push(parseFloat(table.rows[i].cells[j].querySelector('input').value) || 0);
+                }
+                matrix.push(row);
+            }
+            return matrix;
+        }
+
+        function performOperations() {
+            const operation = document.getElementById('operations').value;
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '';
+
+            try {
+                const matrix1 = math.matrix(getMatrix('matrix1'));
+                
+                if (operation === 'determinant' || operation === 'inverse') {
+                    handleSingleMatrixOperations(operation, matrix1, resultDiv);
+                } else {
+                    const matrix2 = math.matrix(getMatrix('matrix2'));
+                    handleTwoMatrixOperations(operation, matrix1, matrix2, resultDiv);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<h3>Error</h3><pre>${error.message}</pre>`;
+            }
+        }
+
+        function handleSingleMatrixOperations(operation, matrix, resultDiv) {
+            try {
+                switch (operation) {
+                    case 'determinant':
+                        const det = math.det(matrix);
+                        resultDiv.innerHTML += `<h3>Determinant</h3><pre>${det}</pre>`;
+                        break;
+                    case 'inverse':
+                        const inv = math.inv(matrix);
+                        resultDiv.innerHTML += '<h3>Inverse</h3>' + displayMatrix(inv.toArray());
+                        break;
+                    default:
+                        resultDiv.innerHTML += '<h3>Invalid Operation for Single Matrix</h3>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `<h3>Error</h3><pre>${error.message}</pre>`;
+            }
+        }
+
+        function handleTwoMatrixOperations(operation, matrix1, matrix2, resultDiv) {
+            try {
+                let result;
+                switch (operation) {
+                    case 'add':
+                        result = math.add(matrix1, matrix2);
+                        resultDiv.innerHTML += '<h3>Matrix Addition</h3>' + displayMatrix(result.toArray());
+                        break;
+                    case 'subtract':
+                        result = math.subtract(matrix1, matrix2);
+                        resultDiv.innerHTML += '<h3>Matrix Subtraction</h3>' + displayMatrix(result.toArray());
+                        break;
+                    case 'multiply':
+                        result = math.multiply(matrix1, matrix2);
+                        resultDiv.innerHTML += '<h3>Matrix Multiplication</h3>' + displayMatrix(result.toArray());
+                        break;
+                    default:
+                        resultDiv.innerHTML += '<h3>Invalid Operation for Two Matrices</h3>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `<h3>Error</h3><pre>${error.message}</pre>`;
+            }
+        }
+
+        function displayMatrix(matrix) {
+            let tableHTML = '<table class="matrix">';
+            for (let i = 0; i < matrix.length; i++) {
+                tableHTML += '<tr>';
+                for (let j = 0; j < matrix[i].length; j++) {
+                    tableHTML += `<td>${matrix[i][j]}</td>`;
+                }
+                tableHTML += '</tr>';
+            }
+            tableHTML += '</table>';
+            return tableHTML;
+        }
+    </script>
+</body>
+</html>

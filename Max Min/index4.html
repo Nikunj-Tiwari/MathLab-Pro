@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Function Maxima and Minima Finder</title>
+  <!-- Add math.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjs/lib/browser/math.min.js"></script>
+  <!-- Add Plotly.js library -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <!-- Add some elegant styling -->
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    p, input, button {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    input, button {
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #graph {
+      width: 100%;
+      height: 500px;
+    }
+    #results {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Function Maxima and Minima Finder</h1>
+    <p>Enter a mathematical function (e.g., x^2 - 4*x + 3 or tan(x)):</p>
+    <input type="text" id="functionInput" placeholder="Enter function in terms of x">
+    <p>Specify the range for x-values:</p>
+    <input type="number" id="xMin" placeholder="Min x-value" value="-10">
+    <input type="number" id="xMax" placeholder="Max x-value" value="10">
+    <button onclick="findExtrema()">Find Extrema</button>
+    <p id="results"></p>
+    <div id="graph"></div>
+  </div>
+
+  <script>
+    function findExtrema() {
+      const input = document.getElementById('functionInput').value;
+      const xMin = parseFloat(document.getElementById('xMin').value);
+      const xMax = parseFloat(document.getElementById('xMax').value);
+      const math = window.math;
+
+      try {
+        // Parse the function
+        const f = math.compile(input);
+
+        // Generate x values, excluding points close to vertical asymptotes for tan(x)
+        const xValues = [];
+        const yValues = [];
+        for (let x = xMin; x <= xMax; x += 0.01) {
+          const y = f.evaluate({ x });
+          if (Math.abs(y) < 100) { // Exclude points where y-value is too large
+            xValues.push(x);
+            yValues.push(y);
+          }
+        }
+
+        // Calculate derivative
+        const derivative = math.derivative(input, 'x').toString();
+        const d = math.compile(derivative);
+
+        // Find extrema
+        const extrema = [];
+        for (let i = 1; i < xValues.length - 1; i++) {
+          const x = xValues[i];
+          const y = f.evaluate({ x });
+          const slopePrev = d.evaluate({ x: xValues[i - 1] });
+          const slopeNext = d.evaluate({ x: xValues[i + 1] });
+
+          // Check for a change in slope
+          if (slopePrev * slopeNext <= 0 && Math.abs(slopePrev) < 1000 && Math.abs(slopeNext) < 1000) {
+            extrema.push({ x, y, type: slopePrev > 0 ? 'Minima' : 'Maxima' });
+          }
+        }
+
+        // Display results
+        const results = extrema
+          .map(e => `${e.type}: (${e.x.toFixed(2)}, ${e.y.toFixed(2)})`)
+          .join('<br>');
+
+        document.getElementById('results').innerHTML = `<b>Results:</b><br>${results}`;
+
+        // Plot the graph
+        const extremaPoints = {
+          x: extrema.map(e => e.x),
+          y: extrema.map(e => e.y),
+          mode: 'markers+text',
+          type: 'scatter',
+          name: 'Extrema',
+          text: extrema.map(e => `(${e.x.toFixed(2)}, ${e.y.toFixed(2)})`),
+          textposition: 'top center',
+          marker: { color: 'red', size: 10 }
+        };
+
+        const functionGraph = {
+          x: xValues,
+          y: yValues,
+          mode: 'lines',
+          name: 'Function'
+        };
+
+        const layout = {
+          title: 'Function with Maxima and Minima',
+          xaxis: { title: 'x' },
+          yaxis: { title: 'f(x)', range: [-10, 10] }, // Limit y-axis range
+          showlegend: true
+        };
+
+        Plotly.newPlot('graph', [functionGraph, extremaPoints], layout);
+      } catch (error) {
+        alert('Invalid function or error in processing. Please try again!');
+      }
+    }
+
+    // Ensure Plotly is loaded properly
+    window.addEventListener('load', () => {
+      if (!window.Plotly) {
+        alert('Failed to load Plotly.js library. Please check your internet connection or try again later.');
+      }
+    });
+  </script>
+</body>
+</html>

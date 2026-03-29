@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering Graphics Solver</title>
+</head>
+<body>
+    <h1>Engineering Graphics Solver</h1>
+    <form action="/solve" method="post">
+        <label for="shape">Select Shape:</label>
+        <select id="shape" name="shape" onchange="updateInputFields()">
+            <option value="triangle">Equilateral Triangle</option>
+            <option value="hexagon">Regular Hexagon</option>
+            <option value="pentagon">Regular Pentagon</option>
+            <option value="rhombus">Rhombus</option>
+            <option value="circle">Circle</option>
+            <option value="semi_circle">Semi-Circle</option>
+        </select><br>
+        <div id="inputFields"></div>
+        <button type="submit">Solve Problem</button>
+    </form>
+
+    <script>
+        function updateInputFields() {
+            const shapeType = document.getElementById('shape').value;
+            const inputFields = document.getElementById('inputFields');
+
+            inputFields.innerHTML = '';
+
+            switch (shapeType) {
+                case 'triangle':
+                    inputFields.innerHTML = `
+                        <label for="side_length">Enter Side Length (mm):</label>
+                        <input type="number" id="side_length" name="side_length" placeholder="75"><br>
+                        <label for="triangle_inclination">Enter Inclination to V.P. (degrees):</label>
+                        <input type="number" id="triangle_inclination" name="triangle_inclination" placeholder="30"><br>
+                        <label for="side_inclination">Enter Inclination of Side to H.P. (degrees):</label>
+                        <input type="number" id="side_inclination" name="side_inclination" placeholder="45"><br>
+                    `;
+                    break;
+                case 'hexagon':
+                    inputFields.innerHTML = `
+                        <label for="side_length">Enter Side Length (mm):</label>
+                        <input type="number" id="side_length" name="side_length" placeholder="40"><br>
+                        <label for="surface_inclination">Enter Surface Inclination to H.P. (degrees):</label>
+                        <input type="number" id="surface_inclination" name="surface_inclination" placeholder="45"><br>
+                        <label for="diagonal_angle">Enter Diagonal Angle with V.P. (degrees):</label>
+                        <input type="number" id="diagonal_angle" name="diagonal_angle" placeholder="60"><br>
+                    `;
+                    break;
+                case 'pentagon':
+                    inputFields.innerHTML = `
+                        <label for="side_length">Enter Side Length (mm):</label>
+                        <input type="number" id="side_length" name="side_length" placeholder="40"><br>
+                        <label for="surface_inclination">Enter Surface Inclination to H.P. (degrees):</label>
+                        <input type="number" id="surface_inclination" name="surface_inclination" placeholder="30"><br>
+                        <label for="side_inclination">Enter Inclination of Side to V.P. (degrees):</label>
+                        <input type="number" id="side_inclination" name="side_inclination" placeholder="60"><br>
+                    `;
+                    break;
+                case 'rhombus':
+                    inputFields.innerHTML = `
+                        <label for="diagonal1">Enter Length of Longer Diagonal (mm):</label>
+                        <input type="number" id="diagonal1" name="diagonal1" placeholder="125"><br>
+                        <label for="diagonal2">Enter Length of Shorter Diagonal (mm):</label>
+                        <input type="number" id="diagonal2" name="diagonal2" placeholder="50"><br>
+                        <label for="diagonal_angle">Enter Inclination Angle of Longer Diagonal to H.P. (degrees):</label>
+                        <input type="number" id="diagonal_angle" name="diagonal_angle" placeholder="30"><br>
+                    `;
+                    break;
+                case 'circle':
+                    inputFields.innerHTML = `
+                        <label for="diameter">Enter Diameter (mm):</label>
+                        <input type="number" id="diameter" name="diameter" placeholder="50"><br>
+                        <label for="inclination_h">Enter Inclination to H.P. (degrees):</label>
+                        <input type="number" id="inclination_h" name="inclination_h" placeholder="0"><br>
+                        <label for="inclination_v">Enter Inclination to V.P. (degrees):</label>
+                        <input type="number" id="inclination_v" name="inclination_v" placeholder="0"><br>
+                    `;
+                    break;
+                case 'semi_circle':
+                    inputFields.innerHTML = `
+                        <label for="diameter">Enter Diameter (mm):</label>
+                        <input type="number" id="diameter" name="diameter" placeholder="50"><br>
+                        <label for="inclination_h">Enter Inclination to H.P. (degrees):</label>
+                        <input type="number" id="inclination_h" name="inclination_h" placeholder="0"><br>
+                        <label for="inclination_v">Enter Inclination to V.P. (degrees):</label>
+                        <input type="number" id="inclination_v" name="inclination_v" placeholder="0"><br>
+                    `;
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>

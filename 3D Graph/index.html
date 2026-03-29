@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Function Extrema Finder for Two Variables</title>
+  <!-- Add math.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjs/lib/browser/math.min.js"></script>
+  <!-- Add Plotly.js library -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <!-- Add some elegant styling -->
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    p, input, button {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    input, button {
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #graph {
+      width: 100%;
+      height: 500px;
+    }
+    #results {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Function Extrema Finder for Two Variables</h1>
+    <p>Enter a mathematical function of two variables (e.g., x^2 + y^2 - 4*x*y + 3):</p>
+    <input type="text" id="functionInput" placeholder="Enter function in terms of x and y" value="x^2 + y^2">
+    <p>Specify the range for x and y values:</p>
+    <input type="number" id="xMin" placeholder="Min x-value" value="-10">
+    <input type="number" id="xMax" placeholder="Max x-value" value="10">
+    <input type="number" id="yMin" placeholder="Min y-value" value="-10">
+    <input type="number" id="yMax" placeholder="Max y-value" value="10">
+    <button onclick="findExtrema()">Find Extrema</button>
+    <p id="results"></p>
+    <div id="graph"></div>
+  </div>
+
+  <script>
+    function findExtrema() {
+      const input = document.getElementById('functionInput').value;
+      const xMin = parseFloat(document.getElementById('xMin').value);
+      const xMax = parseFloat(document.getElementById('xMax').value);
+      const yMin = parseFloat(document.getElementById('yMin').value);
+      const yMax = parseFloat(document.getElementById('yMax').value);
+      const math = window.math;
+
+      try {
+        // Parse the function
+        const f = math.compile(input);
+
+        // Generate x and y values
+        const xValues = math.range(xMin, xMax, 0.1).toArray();
+        const yValues = math.range(yMin, yMax, 0.1).toArray();
+        const zValues = [];
+
+        for (let i = 0; i < xValues.length; i++) {
+          const row = [];
+          for (let j = 0; j < yValues.length; j++) {
+            row.push(f.evaluate({ x: xValues[i], y: yValues[j] }));
+          }
+          zValues.push(row);
+        }
+
+        // Display results (extrema detection for multi-variable functions is more complex)
+        document.getElementById('results').innerHTML = `<b>Function plotted over the specified range</b>`;
+
+        // Plot the surface graph
+        const surface = {
+          x: xValues,
+          y: yValues,
+          z: zValues,
+          type: 'surface',
+        };
+
+        const layout = {
+          title: 'Surface Plot of the Function',
+          scene: {
+            xaxis: { title: 'x' },
+            yaxis: { title: 'y' },
+            zaxis: { title: 'f(x, y)' },
+            camera: {
+              eye: {x: 1.5, y: 1.5, z: 1.5}
+            }
+          }
+        };
+
+        Plotly.newPlot('graph', [surface], layout);
+      } catch (error) {
+        alert('Invalid function or error in processing. Please try again!');
+      }
+    }
+
+    // Ensure Plotly is loaded properly
+    window.addEventListener('load', () => {
+      if (!window.Plotly) {
+        alert('Failed to load Plotly.js library. Please check your internet connection or try again later.');
+      }
+    });
+  </script>
+</body>
+</html>

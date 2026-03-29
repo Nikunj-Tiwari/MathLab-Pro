@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Eigenvalues Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .matrix-input {
+            margin: 10px 0;
+        }
+        .output {
+            background: #f8f9fa;
+            padding: 10px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <h1>Matrix Eigenvalues Calculator</h1>
+    <div class="container">
+        <input type="number" id="matrixOrder" placeholder="Enter matrix order (n)" min="1">
+        <button onclick="generateMatrixInput()">Generate Matrix Input</button>
+        <div id="matrixInputContainer" class="matrix-input"></div>
+        <button onclick="calculateEigenvalues()">Calculate Eigenvalues</button>
+        <div id="output" class="output"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
+    <script>
+        function generateMatrixInput() {
+            const n = parseInt(document.getElementById('matrixOrder').value);
+            const container = document.getElementById('matrixInputContainer');
+            container.innerHTML = '';
+
+            if (n < 1 || isNaN(n)) {
+                alert("Please enter a valid matrix order (n > 0).");
+                return;
+            }
+
+            for (let i = 0; i < n; i++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.textContent = `Row ${i + 1}: `;
+                for (let j = 0; j < n; j++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.placeholder = `a[${i + 1},${j + 1}]`;
+                    input.style.margin = '2px';
+                    rowDiv.appendChild(input);
+                }
+                container.appendChild(rowDiv);
+            }
+        }
+
+        function calculateEigenvalues() {
+            const n = parseInt(document.getElementById('matrixOrder').value);
+            const container = document.getElementById('matrixInputContainer');
+            const inputs = container.querySelectorAll('input');
+            const matrix = [];
+            let row = [];
+
+            // Collect matrix values
+            inputs.forEach((input, index) => {
+                row.push(parseFloat(input.value) || 0);
+                if ((index + 1) % n === 0) {
+                    matrix.push(row);
+                    row = [];
+                }
+            });
+
+            if (matrix.length !== n || matrix.some(r => r.length !== n)) {
+                document.getElementById('output').textContent = "Invalid matrix. Please enter all values.";
+                return;
+            }
+
+            try {
+                // Eigenvalue calculation using numeric.js
+                const eigenvalues = numeric.eig(matrix).lambda.x;
+                document.getElementById('output').textContent = `Eigenvalues: ${eigenvalues.join(', ')}`;
+            } catch (error) {
+                document.getElementById('output').textContent = "Error calculating eigenvalues: " + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Characteristic Equation Calculator</title>
+    <script>
+        function calculateCharacteristicEquation() {
+            // Get the matrix input from the user
+            const matrix = [
+                [parseFloat(document.getElementById('a11').value), parseFloat(document.getElementById('a12').value), parseFloat(document.getElementById('a13').value)],
+                [parseFloat(document.getElementById('a21').value), parseFloat(document.getElementById('a22').value), parseFloat(document.getElementById('a23').value)],
+                [parseFloat(document.getElementById('a31').value), parseFloat(document.getElementById('a32').value), parseFloat(document.getElementById('a33').value)]
+            ];
+
+            // Calculate the trace of the matrix (sum of diagonal elements)
+            const trace = matrix[0][0] + matrix[1][1] + matrix[2][2];
+
+            // Calculate the determinant of the matrix (A)
+            const detA = matrix[0][0] * (matrix[1][1] * matrix[2][2] - matrix[1][2] * matrix[2][1])
+                       - matrix[0][1] * (matrix[1][0] * matrix[2][2] - matrix[1][2] * matrix[2][0])
+                       + matrix[0][2] * (matrix[1][0] * matrix[2][1] - matrix[1][1] * matrix[2][0]);
+
+            // Calculate the sum of 2x2 minors
+            const sumOfMinors = matrix[0][0] * (matrix[1][1] * matrix[2][2] - matrix[1][2] * matrix[2][1])
+                                - matrix[0][1] * (matrix[1][0] * matrix[2][2] - matrix[1][2] * matrix[2][0])
+                                + matrix[0][2] * (matrix[1][0] * matrix[2][1] - matrix[1][1] * matrix[2][0]);
+
+            // Construct the characteristic equation
+            const lambda = 'λ';
+            const characteristicPoly = `${lambda}^3 - ${trace}${lambda}^2 + ${sumOfMinors}${lambda} - ${detA}`;
+
+            // Display the characteristic equation
+            document.getElementById('result').innerText = `The characteristic equation is: ${characteristicPoly} = 0`;
+        }
+    </script>
+</head>
+<body>
+    <h1>Characteristic Equation Calculator</h1>
+
+    <h2>Enter the 3x3 Matrix:</h2>
+    <table>
+        <tr>
+            <td><input type="number" id="a11" placeholder="a11" required></td>
+            <td><input type="number" id="a12" placeholder="a12" required></td>
+            <td><input type="number" id="a13" placeholder="a13" required></td>
+        </tr>
+        <tr>
+            <td><input type="number" id="a21" placeholder="a21" required></td>
+            <td><input type="number" id="a22" placeholder="a22" required></td>
+            <td><input type="number" id="a23" placeholder="a23" required></td>
+        </tr>
+        <tr>
+            <td><input type="number" id="a31" placeholder="a31" required></td>
+            <td><input type="number" id="a32" placeholder="a32" required></td>
+            <td><input type="number" id="a33" placeholder="a33" required></td>
+        </tr>
+    </table>
+    <br>
+    <button onclick="calculateCharacteristicEquation()">Calculate Characteristic Equation</button>
+    <br><br>
+    <p id="result"></p>
+</body>
+</html>
