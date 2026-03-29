@@ -1,35 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Base Converter</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Number Base Converter | MathLab Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../main/global.css">
+    <style>
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .result-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            padding: 15px;
+            border-radius: var(--radius-md);
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            word-break: break-all;
+        }
+    </style>
 </head>
+
 <body>
+    <nav class="navbar">
+        <a href="../main/index.html" class="nav-logo">
+            <i class="fas fa-square-root-variable"></i>
+            MathLab Pro
+        </a>
+        <div class="nav-links">
+            <a href="../main/index.html" class="nav-link">Home</a>
+            <a href="../main/index.html#tools" class="nav-link">Tools</a>
+        </div>
+    </nav>
+
+    <div class="bg-glow"></div>
+
     <div class="container">
-        <h1>Number Base Converter</h1>
-        <div class="form-group">
-            <label for="number">Enter Number:</label>
-            <input type="text" id="number" placeholder="Enter number">
-        </div>
-        <div class="form-group">
-            <label for="base">Select Base:</label>
-            <select id="base">
-                <option value="10">Decimal</option>
-                <option value="2">Binary</option>
-                <option value="16">Hexadecimal</option>
-                <option value="8">Octal</option>
-            </select>
-        </div>
-        <button onclick="convertNumber()">Convert</button>
-        <div class="results">
-            <p id="decimal"></p>
-            <p id="binary"></p>
-            <p id="hexadecimal"></p>
-            <p id="octal"></p>
-        </div>
+        <main class="main-card" style="max-width: 600px; margin: 0 auto;">
+            <h1 class="section-title">Number Converter</h1>
+            <p class="section-subtitle">Seamlessly convert values between different numbering systems.</p>
+
+            <form id="converterForm">
+                <div class="form-group">
+                    <label class="form-label">Input Value</label>
+                    <input type="text" id="number" class="input-field" placeholder="e.g. 1010 or FF">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Source Base</label>
+                    <select id="base" class="input-field">
+                        <option value="10">Decimal (Base 10)</option>
+                        <option value="2">Binary (Base 2)</option>
+                        <option value="16">Hexadecimal (Base 16)</option>
+                        <option value="8">Octal (Base 8)</option>
+                    </select>
+                </div>
+
+                <button type="button" id="calcBtn" class="btn-gradient" style="width: 100%; margin-top: 10px;"
+                    onclick="convertNumber()">
+                    <i class="fas fa-exchange-alt"></i> Convert Now
+                </button>
+            </form>
+
+            <div id="resultCard" class="result-card">
+                <h3 style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                    Conversion Results</h3>
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="result-label">Decimal</div>
+                        <div id="decimal" class="result-value">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Binary</div>
+                        <div id="binary" class="result-value">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Hexadecimal</div>
+                        <div id="hexadecimal" class="result-value">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Octal</div>
+                        <div id="octal" class="result-value">-</div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
+
     <script src="scripts.js"></script>
 </body>
+
 </html>

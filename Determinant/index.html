@@ -1,244 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matrix Operations</title>
+    <title>Matrix Operations | MathLab Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../main/global.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to bottom right, #e0e0e0, #c0c0c0), url('https://www.transparenttextures.com/patterns/math-squared.png');
-            background-size: cover;
-            color: #333;
+        .matrix-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            margin: 20px 0;
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+        .matrix-table {
+            border-collapse: separate;
+            border-spacing: 8px;
         }
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-        }
-        h2 {
-            color: #2c3e50;
-        }
-        table, th, td {
-            border: 1px solid #2c3e50;
-            border-collapse: collapse;
-            padding: 10px;
+
+        .matrix-table input {
+            width: 65px;
             text-align: center;
         }
-        input {
-            width: 60px;
-            padding: 5px;
-            text-align: center;
+
+        .matrix-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            justify-content: center;
         }
-        button {
-            margin: 5px 0;
+
+        .matrix-display td {
             padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            background-color: #2c3e50;
-            color: #fff;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        button:hover {
-            background-color: #34495e;
-        }
-        .result {
-            margin-top: 20px;
-        }
-        .matrix {
-            margin: 10px 0;
-            width: 100%;
-        }
-        .matrix td {
-            padding: 10px;
-            border: 1px solid #34495e;
-            background-color: #ecf0f1;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            font-family: monospace;
         }
     </style>
 </head>
+
 <body>
+    <nav class="navbar">
+        <a href="../main/index.html" class="nav-logo">
+            <i class="fas fa-square-root-variable"></i>
+            MathLab Pro
+        </a>
+        <div class="nav-links">
+            <a href="../main/index.html" class="nav-link">Home</a>
+            <a href="../main/index.html#tools" class="nav-link">Tools</a>
+        </div>
+    </nav>
+
+    <div class="bg-glow"></div>
+
     <div class="container">
-        <h1>Matrix Operations</h1>
-        <form id="matrixForm">
-            <div>
-                <label for="numMatrices">Select Number of Matrices:</label>
-                <select id="numMatrices" onchange="displayMatrices()">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                </select>
+        <main class="main-card">
+            <h1 class="section-title">Matrix Calculator</h1>
+            <p class="section-subtitle">Precise linear algebra operations with real-time validation.</p>
+
+            <form id="matrixForm">
+                <div class="matrix-container">
+                    <div id="m1-box">
+                        <h3 style="color: var(--accent-color); text-align: center; margin-bottom: 15px;">Matrix A</h3>
+                        <table id="matrix1" class="matrix-table">
+                            <tr>
+                                <td><input type="number" step="any" class="input-field" value="1"></td>
+                                <td><input type="number" step="any" class="input-field" value="0"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="number" step="any" class="input-field" value="0"></td>
+                                <td><input type="number" step="any" class="input-field" value="1"></td>
+                            </tr>
+                        </table>
+                        <div class="matrix-actions">
+                            <button type="button" class="btn-sm" onclick="addRow('matrix1')"><i class="fas fa-plus"></i>
+                                R</button>
+                            <button type="button" class="btn-sm" onclick="removeRow('matrix1')"><i
+                                    class="fas fa-minus"></i> R</button>
+                            <button type="button" class="btn-sm" onclick="addCol('matrix1')"><i class="fas fa-plus"></i>
+                                C</button>
+                            <button type="button" class="btn-sm" onclick="removeCol('matrix1')"><i
+                                    class="fas fa-minus"></i> C</button>
+                        </div>
+                    </div>
+
+                    <div id="m2-box">
+                        <h3 style="color: var(--accent-color); text-align: center; margin-bottom: 15px;">Matrix B</h3>
+                        <table id="matrix2" class="matrix-table">
+                            <tr>
+                                <td><input type="number" step="any" class="input-field" value="1"></td>
+                                <td><input type="number" step="any" class="input-field" value="0"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="number" step="any" class="input-field" value="0"></td>
+                                <td><input type="number" step="any" class="input-field" value="1"></td>
+                            </tr>
+                        </table>
+                        <div class="matrix-actions">
+                            <button type="button" class="btn-sm" onclick="addRow('matrix2')"><i class="fas fa-plus"></i>
+                                R</button>
+                            <button type="button" class="btn-sm" onclick="removeRow('matrix2')"><i
+                                    class="fas fa-minus"></i> R</button>
+                            <button type="button" class="btn-sm" onclick="addCol('matrix2')"><i class="fas fa-plus"></i>
+                                C</button>
+                            <button type="button" class="btn-sm" onclick="removeCol('matrix2')"><i
+                                    class="fas fa-minus"></i> C</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="max-width: 400px; margin: 20px auto;">
+                    <label class="form-label">Select Operation</label>
+                    <select id="operation" class="input-field">
+                        <option value="add">Addition (A + B)</option>
+                        <option value="sub">Subtraction (A - B)</option>
+                        <option value="mul">Multiplication (A × B)</option>
+                        <option value="det">Determinant (of A)</option>
+                        <option value="inv">Inverse (of A)</option>
+                        <option value="trans">Transpose (of A)</option>
+                    </select>
+                </div>
+
+                <button type="button" id="calcBtn" class="btn-gradient" style="width: 100%;" onclick="calculate()">
+                    <i class="fas fa-calculator"></i> Compute Result
+                </button>
+            </form>
+
+            <div id="resultCard" class="result-card">
+                <h3 style="margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+                    Result</h3>
+                <div id="resultOutput"></div>
             </div>
-            <div id="matrix1Container">
-                <h2>Matrix 1</h2>
-                <table id="matrix1">
-                    <tr><td><input type="number" step="any"></td></tr>
-                </table>
-                <button type="button" onclick="addRow('matrix1')">Add Row</button>
-                <button type="button" onclick="removeRow('matrix1')">Remove Row</button>
-                <button type="button" onclick="addColumn('matrix1')">Add Column</button>
-                <button type="button" onclick="removeColumn('matrix1')">Remove Column</button>
-            </div>
-            <div id="matrix2Container" style="display: none;">
-                <h2>Matrix 2</h2>
-                <table id="matrix2">
-                    <tr><td><input type="number" step="any"></td></tr>
-                </table>
-                <button type="button" onclick="addRow('matrix2')">Add Row</button>
-                <button type="button" onclick="removeRow('matrix2')">Remove Row</button>
-                <button type="button" onclick="addColumn('matrix2')">Add Column</button>
-                <button type="button" onclick="removeColumn('matrix2')">Remove Column</button>
-            </div>
-            <br>
-            <div>
-                <label for="operations">Select Operation:</label>
-                <select id="operations">
-                    <option value="add">Addition</option>
-                    <option value="subtract">Subtraction</option>
-                    <option value="multiply">Multiplication</option>
-                    <option value="determinant">Determinant</option>
-                    <option value="inverse">Inverse</option>
-                </select>
-            </div>
-            <br>
-            <button type="button" onclick="performOperations()">Perform Operation</button>
-        </form>
-        <div class="result" id="result"></div>
+        </main>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.5.0/math.min.js"></script>
     <script>
-        function displayMatrices() {
-            const numMatrices = document.getElementById('numMatrices').value;
-            document.getElementById('matrix2Container').style.display = numMatrices === "2" ? 'block' : 'none';
-        }
-
-        function addRow(tableId) {
-            const table = document.getElementById(tableId);
+        function addRow(id) {
+            const table = document.getElementById(id);
             const row = table.insertRow();
             for (let i = 0; i < table.rows[0].cells.length; i++) {
-                const cell = row.insertCell();
-                cell.innerHTML = '<input type="number" step="any">';
+                row.insertCell().innerHTML = '<input type="number" step="any" class="input-field" value="0">';
             }
         }
-
-        function removeRow(tableId) {
-            const table = document.getElementById(tableId);
-            if (table.rows.length > 1) {
-                table.deleteRow(-1);
-            }
+        function removeRow(id) {
+            const table = document.getElementById(id);
+            if (table.rows.length > 1) table.deleteRow(-1);
         }
-
-        function addColumn(tableId) {
-            const table = document.getElementById(tableId);
+        function addCol(id) {
+            const table = document.getElementById(id);
             for (let i = 0; i < table.rows.length; i++) {
-                const cell = table.rows[i].insertCell();
-                cell.innerHTML = '<input type="number" step="any">';
+                table.rows[i].insertCell().innerHTML = '<input type="number" step="any" class="input-field" value="0">';
             }
         }
-
-        function removeColumn(tableId) {
-            const table = document.getElementById(tableId);
+        function removeCol(id) {
+            const table = document.getElementById(id);
             if (table.rows[0].cells.length > 1) {
-                for (let i = 0; i < table.rows.length; i++) {
-                    table.rows[i].deleteCell(-1);
-                }
+                for (let i = 0; i < table.rows.length; i++) table.rows[i].deleteCell(-1);
             }
         }
 
-        function getMatrix(tableId) {
-            const table = document.getElementById(tableId);
-            const matrix = [];
+        function getMatrixData(id) {
+            const table = document.getElementById(id);
+            const data = [];
             for (let i = 0; i < table.rows.length; i++) {
                 const row = [];
                 for (let j = 0; j < table.rows[i].cells.length; j++) {
                     row.push(parseFloat(table.rows[i].cells[j].querySelector('input').value) || 0);
                 }
-                matrix.push(row);
+                data.push(row);
             }
-            return matrix;
+            return data;
         }
 
-        function performOperations() {
-            const operation = document.getElementById('operations').value;
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = '';
+        async function calculate() {
+            const btn = document.getElementById('calcBtn');
+            const output = document.getElementById('resultOutput');
+            const card = document.getElementById('resultCard');
+            const op = document.getElementById('operation').value;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculating...';
+            card.classList.remove('visible');
+
+            await new Promise(r => setTimeout(r, 400));
 
             try {
-                const matrix1 = math.matrix(getMatrix('matrix1'));
-                
-                if (operation === 'determinant' || operation === 'inverse') {
-                    handleSingleMatrixOperations(operation, matrix1, resultDiv);
-                } else {
-                    const matrix2 = math.matrix(getMatrix('matrix2'));
-                    handleTwoMatrixOperations(operation, matrix1, matrix2, resultDiv);
-                }
-            } catch (error) {
-                resultDiv.innerHTML = `<h3>Error</h3><pre>${error.message}</pre>`;
-            }
-        }
-
-        function handleSingleMatrixOperations(operation, matrix, resultDiv) {
-            try {
-                switch (operation) {
-                    case 'determinant':
-                        const det = math.det(matrix);
-                        resultDiv.innerHTML += `<h3>Determinant</h3><pre>${det}</pre>`;
-                        break;
-                    case 'inverse':
-                        const inv = math.inv(matrix);
-                        resultDiv.innerHTML += '<h3>Inverse</h3>' + displayMatrix(inv.toArray());
-                        break;
-                    default:
-                        resultDiv.innerHTML += '<h3>Invalid Operation for Single Matrix</h3>';
-                }
-            } catch (error) {
-                resultDiv.innerHTML += `<h3>Error</h3><pre>${error.message}</pre>`;
-            }
-        }
-
-        function handleTwoMatrixOperations(operation, matrix1, matrix2, resultDiv) {
-            try {
+                const A = getMatrixData('matrix1');
                 let result;
-                switch (operation) {
-                    case 'add':
-                        result = math.add(matrix1, matrix2);
-                        resultDiv.innerHTML += '<h3>Matrix Addition</h3>' + displayMatrix(result.toArray());
-                        break;
-                    case 'subtract':
-                        result = math.subtract(matrix1, matrix2);
-                        resultDiv.innerHTML += '<h3>Matrix Subtraction</h3>' + displayMatrix(result.toArray());
-                        break;
-                    case 'multiply':
-                        result = math.multiply(matrix1, matrix2);
-                        resultDiv.innerHTML += '<h3>Matrix Multiplication</h3>' + displayMatrix(result.toArray());
-                        break;
-                    default:
-                        resultDiv.innerHTML += '<h3>Invalid Operation for Two Matrices</h3>';
-                }
-            } catch (error) {
-                resultDiv.innerHTML += `<h3>Error</h3><pre>${error.message}</pre>`;
-            }
-        }
 
-        function displayMatrix(matrix) {
-            let tableHTML = '<table class="matrix">';
-            for (let i = 0; i < matrix.length; i++) {
-                tableHTML += '<tr>';
-                for (let j = 0; j < matrix[i].length; j++) {
-                    tableHTML += `<td>${matrix[i][j]}</td>`;
+                if (['add', 'sub', 'mul'].includes(op)) {
+                    const B = getMatrixData('matrix2');
+                    if (op === 'add') result = math.add(A, B);
+                    else if (op === 'sub') result = math.subtract(A, B);
+                    else if (op === 'mul') result = math.multiply(A, B);
+                } else {
+                    if (op === 'det') result = math.det(A);
+                    else if (op === 'inv') result = math.inv(A);
+                    else if (op === 'trans') result = math.transpose(A);
                 }
-                tableHTML += '</tr>';
+
+                if (typeof result === 'number') {
+                    output.innerHTML = `<div style="font-size: 2rem; font-weight: 700; color: var(--accent-color); text-align: center;">${math.format(result, { precision: 4 })}</div>`;
+                } else {
+                    let html = '<table class="matrix-display" style="margin: 0 auto;">';
+                    const arr = math.isMatrix(result) ? result.toArray() : result;
+                    arr.forEach(row => {
+                        html += '<tr>' + row.map(v => `<td>${math.format(v, { precision: 4 })}</td>`).join('') + '</tr>';
+                    });
+                    html += '</table>';
+                    output.innerHTML = html;
+                }
+                card.classList.add('visible');
+            } catch (e) {
+                output.innerHTML = `<div style="color: #ef4444; padding: 10px; border-radius: 8px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2);">${e.message}</div>`;
+                card.classList.add('visible');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-calculator"></i> Compute Result';
             }
-            tableHTML += '</table>';
-            return tableHTML;
         }
     </script>
 </body>
+
 </html>

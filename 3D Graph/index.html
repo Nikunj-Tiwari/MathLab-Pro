@@ -1,138 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Function Extrema Finder for Two Variables</title>
-  <!-- Add math.js library -->
-  <script src="https://cdn.jsdelivr.net/npm/mathjs/lib/browser/math.min.js"></script>
-  <!-- Add Plotly.js library -->
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  <!-- Add some elegant styling -->
+  <title>3D Function Grapher | MathLab Pro</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../main/global.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f4f4f9;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-    .container {
-      max-width: 800px;
-      margin: auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    p, input, button {
-      width: 100%;
-      margin-bottom: 10px;
-    }
-    input, button {
-      padding: 10px;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
     #graph {
       width: 100%;
-      height: 500px;
+      height: 600px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.02);
     }
-    #results {
-      margin-top: 20px;
-      font-weight: bold;
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
     }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <h1>Function Extrema Finder for Two Variables</h1>
-    <p>Enter a mathematical function of two variables (e.g., x^2 + y^2 - 4*x*y + 3):</p>
-    <input type="text" id="functionInput" placeholder="Enter function in terms of x and y" value="x^2 + y^2">
-    <p>Specify the range for x and y values:</p>
-    <input type="number" id="xMin" placeholder="Min x-value" value="-10">
-    <input type="number" id="xMax" placeholder="Max x-value" value="10">
-    <input type="number" id="yMin" placeholder="Min y-value" value="-10">
-    <input type="number" id="yMax" placeholder="Max y-value" value="10">
-    <button onclick="findExtrema()">Find Extrema</button>
-    <p id="results"></p>
-    <div id="graph"></div>
+  <nav class="navbar">
+    <a href="../main/index.html" class="nav-logo">
+      <i class="fas fa-square-root-variable"></i>
+      MathLab Pro
+    </a>
+    <div class="nav-links">
+      <a href="../main/index.html" class="nav-link">Home</a>
+      <a href="../main/index.html#tools" class="nav-link">Tools</a>
+    </div>
+  </nav>
+
+  <div class="bg-glow"></div>
+
+  <div class="container" style="max-width: 1000px;">
+    <main class="main-card">
+      <h1 class="section-title">3D Function Visualizer</h1>
+      <p class="section-subtitle">Accurate 3D surface rendering with robust mathematical parsing.</p>
+
+      <form id="graphForm">
+        <div class="form-group">
+          <label class="form-label">Function f(x, y)</label>
+          <input type="text" id="functionInput" class="input-field" placeholder="e.g. sin(x) * cos(y) or x^2 + y^2"
+            value="sin(x) * cos(y)">
+          <small style="color: var(--text-secondary); margin-top: 5px; display: block;">Supports: sin, cos, tan, exp,
+            log, sqrt, abs, ^ (power), etc.</small>
+        </div>
+
+        <div class="controls-grid">
+          <div class="form-group">
+            <label class="form-label">X Min</label>
+            <input type="number" id="xMin" class="input-field" value="-10" step="any">
+          </div>
+          <div class="form-group">
+            <label class="form-label">X Max</label>
+            <input type="number" id="xMax" class="input-field" value="10" step="any">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Y Min</label>
+            <input type="number" id="yMin" class="input-field" value="-10" step="any">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Y Max</label>
+            <input type="number" id="yMax" class="input-field" value="10" step="any">
+          </div>
+        </div>
+
+        <button type="button" id="calcBtn" class="btn-gradient" style="width: 100%;" onclick="renderGraph()">
+          <i class="fas fa-cube"></i> Generate 3D Plot
+        </button>
+      </form>
+
+      <div id="resultCard" class="result-card">
+        <div id="graph"></div>
+      </div>
+    </main>
   </div>
 
   <script>
-    function findExtrema() {
-      const input = document.getElementById('functionInput').value;
+    async function renderGraph() {
+      const calcBtn = document.getElementById('calcBtn');
+      const resultCard = document.getElementById('resultCard');
+      const inputStr = document.getElementById('functionInput').value;
       const xMin = parseFloat(document.getElementById('xMin').value);
       const xMax = parseFloat(document.getElementById('xMax').value);
       const yMin = parseFloat(document.getElementById('yMin').value);
       const yMax = parseFloat(document.getElementById('yMax').value);
-      const math = window.math;
+
+      // Validation
+      if (isNaN(xMin) || isNaN(xMax) || isNaN(yMin) || isNaN(yMax)) {
+        alert("Please enter valid numeric ranges.");
+        return;
+      }
+      if (xMax <= xMin || yMax <= yMin) {
+        alert("Max values must be greater than Min values.");
+        return;
+      }
+
+      calcBtn.disabled = true;
+      calcBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rendering...';
+      resultCard.classList.remove('visible');
+
+      await new Promise(r => setTimeout(r, 400));
 
       try {
-        // Parse the function
-        const f = math.compile(input);
+        // Use Math.js for robust parsing and evaluation
+        const node = math.parse(inputStr);
+        const code = node.compile();
 
-        // Generate x and y values
-        const xValues = math.range(xMin, xMax, 0.1).toArray();
-        const yValues = math.range(yMin, yMax, 0.1).toArray();
+        const steps = 50;
+        const xValues = math.range(xMin, xMax, (xMax - xMin) / steps).toArray();
+        const yValues = math.range(yMin, yMax, (yMax - yMin) / steps).toArray();
         const zValues = [];
 
         for (let i = 0; i < xValues.length; i++) {
           const row = [];
           for (let j = 0; j < yValues.length; j++) {
-            row.push(f.evaluate({ x: xValues[i], y: yValues[j] }));
+            try {
+              const val = code.evaluate({ x: xValues[i], y: yValues[j] });
+              row.push(val);
+            } catch (e) { row.push(null); }
           }
           zValues.push(row);
         }
 
-        // Display results (extrema detection for multi-variable functions is more complex)
-        document.getElementById('results').innerHTML = `<b>Function plotted over the specified range</b>`;
-
-        // Plot the surface graph
-        const surface = {
+        const data = [{
+          z: zValues,
           x: xValues,
           y: yValues,
-          z: zValues,
           type: 'surface',
-        };
+          colorscale: 'Portland',
+          showscale: false
+        }];
 
         const layout = {
-          title: 'Surface Plot of the Function',
+          title: 'f(x, y) Surface Plot',
+          autosize: true,
+          paper_bgcolor: 'rgba(0,0,0,0)',
+          plot_bgcolor: 'rgba(0,0,0,0)',
+          font: { color: '#f8fafc', family: 'Poppins' },
           scene: {
-            xaxis: { title: 'x' },
-            yaxis: { title: 'y' },
-            zaxis: { title: 'f(x, y)' },
-            camera: {
-              eye: {x: 1.5, y: 1.5, z: 1.5}
-            }
-          }
+            xaxis: { title: 'X', gridcolor: 'rgba(255,255,255,0.1)' },
+            yaxis: { title: 'Y', gridcolor: 'rgba(255,255,255,0.1)' },
+            zaxis: { title: 'f(x, y)', gridcolor: 'rgba(255,255,255,0.1)' },
+            camera: { eye: { x: 1.5, y: 1.5, z: 1.2 } }
+          },
+          margin: { l: 0, r: 0, b: 0, t: 40 }
         };
 
-        Plotly.newPlot('graph', [surface], layout);
+        Plotly.newPlot('graph', data, layout, { responsive: true });
+        resultCard.classList.add('visible');
       } catch (error) {
-        alert('Invalid function or error in processing. Please try again!');
+        alert('Mathematical Error: ' + error.message);
+      } finally {
+        calcBtn.disabled = false;
+        calcBtn.innerHTML = '<i class="fas fa-cube"></i> Generate 3D Plot';
       }
     }
 
-    // Ensure Plotly is loaded properly
-    window.addEventListener('load', () => {
-      if (!window.Plotly) {
-        alert('Failed to load Plotly.js library. Please check your internet connection or try again later.');
-      }
-    });
+    window.onload = renderGraph;
   </script>
 </body>
+
 </html>

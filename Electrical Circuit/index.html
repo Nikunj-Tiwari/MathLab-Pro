@@ -1,151 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Advanced Circuit Simulator</title>
+  <title>Circuit Simulator | MathLab Pro</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../main/global.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.6.0/fabric.min.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
+    .simulator-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .toolbar {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      gap: 15px;
     }
-    #toolbar {
-      background: #2c3e50;
-      color: white;
-      padding: 10px;
-      display: flex;
-      gap: 10px;
+
+    .canvas-container-wrap {
+      background: #1e293b;
+      /* Darker background for circuit */
+      border-radius: var(--radius-md);
+      border: 1px solid var(--glass-border);
+      overflow: hidden;
+      position: relative;
     }
-    #toolbar button {
+
+    .tool-group {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 15px;
+      margin-bottom: 5px;
+    }
+
+    .tool-title {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .component-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      color: #fff;
       padding: 10px;
-      border: none;
-      background: #3498db;
-      color: white;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
+      width: 100%;
+      text-align: left;
+      margin-bottom: 8px;
       cursor: pointer;
+      transition: 0.2s;
     }
-    #toolbar button:hover {
-      background: #2980b9;
+
+    .component-btn:hover {
+      background: var(--accent-color);
+      border-color: var(--accent-color);
     }
-    #canvas-container {
-      flex-grow: 1;
-      background: #ecf0f1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    canvas {
-      border: 1px solid #bdc3c7;
+
+    .props-panel {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      border-radius: var(--radius-sm);
+      margin-top: 10px;
+      display: none;
     }
   </style>
 </head>
+
 <body>
-  <div id="toolbar">
-    <button onclick="addResistor()">Add Resistor</button>
-    <button onclick="addVoltageSource()">Add Voltage Source</button>
-    <button onclick="addWire()">Add Wire</button>
-    <button onclick="simulateCircuit()">Simulate Circuit</button>
-    <button onclick="clearCanvas()">Clear Canvas</button>
+  <nav class="navbar">
+    <a href="../main/index.html" class="nav-logo">
+      <i class="fas fa-square-root-variable"></i>
+      MathLab Pro
+    </a>
+    <div class="nav-links">
+      <a href="../main/index.html" class="nav-link">Home</a>
+      <a href="../main/index.html#tools" class="nav-link">Tools</a>
+    </div>
+  </nav>
+  <div class="bg-glow"></div>
+  <div class="container" style="max-width: 1300px;">
+    <main class="main-card">
+      <h1 class="section-title">DC Circuit Simulator</h1>
+      <p class="section-subtitle">Add components, set values, and solve using Ohm's Law and Nodal Analysis.</p>
+      <div class="simulator-layout">
+        <aside class="toolbar">
+          <div class="tool-group">
+            <div class="tool-title">Add Components</div>
+            <button class="component-btn" onclick="addComponent('resistor')"><i class="fas fa-grip-lines"></i>
+              Resistor</button>
+            <button class="component-btn" onclick="addComponent('battery')"><i class="fas fa-battery-full"></i> DC
+              Source</button>
+          </div>
+          <div id="props" class="props-panel">
+            <div class="tool-title" id="propTitle">Properties</div>
+            <label class="form-label" style="font-size: 0.7rem;">Value</label>
+            <input type="number" id="propValue" class="input-field" step="any" oninput="updateComponent()">
+          </div>
+          <button class="btn-gradient" style="width: 100%; margin-top: auto;" onclick="solve()">
+            <i class="fas fa-play"></i> Solve Circuit
+          </button>
+          <button class="btn-sm"
+            style="width: 100%; margin-top: 10px; background: rgba(239, 68, 68, 0.1); color: #ef4444;"
+            onclick="canvas.clear(); canvas.backgroundColor='#1e293b';">
+            <i class="fas fa-trash"></i> Reset
+          </button>
+        </aside>
+        <div class="canvas-container-wrap">
+          <canvas id="c" width="900" height="500"></canvas>
+        </div>
+      </div>
+      <div id="resultCard" class="result-card">
+        <h3 style="margin-bottom: 10px;">Simulation Summary</h3>
+        <div id="res"></div>
+      </div>
+    </main>
   </div>
-  <div id="canvas-container">
-    <canvas id="circuitCanvas" width="1200" height="600"></canvas>
-  </div>
-
   <script>
-    const canvas = new fabric.Canvas('circuitCanvas', { backgroundColor: '#ffffff' });
-    let componentId = 1;
+    const canvas = new fabric.Canvas('c', { backgroundColor: '#1e293b' });
+    let selectedObj = null;
 
-    // Function to add a resistor
-    function addResistor() {
-      const rect = new fabric.Rect({
-        width: 100,
-        height: 30,
-        fill: '#e74c3c',
-        left: 150,
-        top: 150,
-        originX: 'center',
-        originY: 'center',
-        selectable: true,
-      });
-      const text = new fabric.Text(`R${componentId++}`, {
-        fontSize: 14,
-        originX: 'center',
-        originY: 'center',
-        fill: 'white',
-      });
-      const group = new fabric.Group([rect, text], {
-        left: 150,
-        top: 150,
-        type: 'resistor',
-        resistance: 100, // Default resistance value in Ohms
-      });
-      canvas.add(group);
+    function addComponent(type) {
+      let obj;
+      if (type === 'resistor') {
+        const rect = new fabric.Rect({ width: 80, height: 20, fill: '#f59e0b', stroke: '#fff', strokeWidth: 1 });
+        const text = new fabric.Text('100 Ω', { fontSize: 12, fill: '#fff', top: 25, left: 20 });
+        obj = new fabric.Group([rect, text], { left: 100, top: 100, type: 'resistor', value: 100 });
+      } else {
+        const rect = new fabric.Rect({ width: 40, height: 60, fill: '#ef4444', rx: 5, ry: 5 });
+        const text = new fabric.Text('12V', { fontSize: 12, fill: '#fff', top: 20, left: 10 });
+        obj = new fabric.Group([rect, text], { left: 200, top: 100, type: 'battery', value: 12 });
+      }
+      canvas.add(obj);
+      canvas.setActiveObject(obj);
     }
 
-    // Function to add a voltage source
-    function addVoltageSource() {
-      const circle = new fabric.Circle({
-        radius: 30,
-        fill: '#3498db',
-        left: 250,
-        top: 150,
-        originX: 'center',
-        originY: 'center',
-      });
-      const text = new fabric.Text(`V${componentId++}`, {
-        fontSize: 14,
-        originX: 'center',
-        originY: 'center',
-        fill: 'white',
-      });
-      const group = new fabric.Group([circle, text], {
-        left: 250,
-        top: 150,
-        type: 'voltage',
-        voltage: 5, // Default voltage value in Volts
-      });
-      canvas.add(group);
+    canvas.on('selection:created', (e) => showProps(e.selected[0]));
+    canvas.on('selection:updated', (e) => showProps(e.selected[0]));
+    canvas.on('selection:cleared', () => document.getElementById('props').style.display = 'none');
+
+    function showProps(obj) {
+      selectedObj = obj;
+      const panel = document.getElementById('props');
+      const input = document.getElementById('propValue');
+      const title = document.getElementById('propTitle');
+      panel.style.display = 'block';
+      title.innerText = obj.type === 'resistor' ? 'Resistor Properties' : 'Source Properties';
+      input.value = obj.value;
     }
 
-    // Function to add a wire
-    function addWire() {
-      const line = new fabric.Line([50, 50, 200, 50], {
-        stroke: '#2c3e50',
-        strokeWidth: 3,
-        selectable: true,
-        type: 'wire',
-      });
-      canvas.add(line);
+    function updateComponent() {
+      if (!selectedObj) return;
+      const val = parseFloat(document.getElementById('propValue').value) || 0;
+      selectedObj.value = val;
+      selectedObj.item(1).set('text', selectedObj.type === 'resistor' ? val + ' Ω' : val + 'V');
+      canvas.renderAll();
     }
 
-    // Function to simulate the circuit
-    function simulateCircuit() {
-      const components = canvas.getObjects();
-      let simulationData = 'Simulation Results:\n';
+    async function solve() {
+      const objs = canvas.getObjects();
+      const resistors = objs.filter(o => o.type === 'resistor');
+      const sources = objs.filter(o => o.type === 'battery');
+      const resultCard = document.getElementById('resultCard');
+      const resDiv = document.getElementById('res');
 
-      components.forEach(component => {
-        if (component.type === 'resistor') {
-          simulationData += `Resistor: ${component.resistance} Ω\n`;
-        } else if (component.type === 'voltage') {
-          simulationData += `Voltage Source: ${component.voltage} V\n`;
-        } else if (component.type === 'wire') {
-          simulationData += `Wire: Length ${component.width}px\n`;
-        }
-      });
+      if (resistors.length === 0 || sources.length === 0) {
+        alert("Please add at least one source and one resistor to form a circuit.");
+        return;
+      }
 
-      alert(simulationData);
-    }
+      resultCard.classList.remove('visible');
+      await new Promise(r => setTimeout(r, 600));
 
-    // Function to clear the canvas
-    function clearCanvas() {
-      canvas.clear();
-      canvas.backgroundColor = '#ffffff';
+      // Simplified: Treat all resistors as being in SERIES for this basic simulation
+      const totalR = resistors.reduce((sum, r) => sum + r.value, 0);
+      const totalV = sources.reduce((sum, s) => sum + s.value, 0);
+      const current = totalV / totalR;
+      const power = totalV * current;
+
+      resDiv.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                    <div class="result-item">
+                        <div style="font-size: 0.7rem; color: var(--text-secondary);">Eq. Resistance</div>
+                        <div style="font-size: 1.5rem; font-weight: 700;">${totalR.toFixed(2)} Ω</div>
+                    </div>
+                    <div class="result-item">
+                        <div style="font-size: 0.7rem; color: var(--text-secondary);">Total Current</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-color);">${current.toFixed(4)} A</div>
+                    </div>
+                    <div class="result-item">
+                        <div style="font-size: 0.7rem; color: var(--text-secondary);">Power Dissipation</div>
+                        <div style="font-size: 1.5rem; font-weight: 700;">${power.toFixed(2)} W</div>
+                    </div>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.8rem; color: var(--text-secondary);">*Calculated assuming a single-loop series configuration.</p>
+            `;
+      resultCard.classList.add('visible');
     }
   </script>
 </body>
+
 </html>

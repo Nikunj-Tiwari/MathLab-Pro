@@ -1,160 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Function Maxima and Minima Finder</title>
-  <!-- Add math.js library -->
-  <script src="https://cdn.jsdelivr.net/npm/mathjs/lib/browser/math.min.js"></script>
-  <!-- Add Plotly.js library -->
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  <!-- Add some elegant styling -->
+  <title>Maxima & Minima | MathLab Pro</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../main/global.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f4f4f9;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-    .container {
-      max-width: 800px;
-      margin: auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    p, input, button {
-      width: 100%;
-      margin-bottom: 10px;
-    }
-    input, button {
-      padding: 10px;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
     #graph {
       width: 100%;
-      height: 500px;
+      height: 450px;
+      margin-top: 25px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--glass-border);
+      overflow: hidden;
     }
-    #results {
-      margin-top: 20px;
-      font-weight: bold;
+
+    .extrema-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 20px 0;
+      justify-content: center;
+    }
+
+    .extrema-item {
+      padding: 10px 15px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .type-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .max {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+    }
+
+    .min {
+      background: rgba(34, 197, 94, 0.2);
+      color: #4ade80;
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <h1>Function Maxima and Minima Finder</h1>
-    <p>Enter a mathematical function (e.g., x^2 - 4*x + 3 or tan(x)):</p>
-    <input type="text" id="functionInput" placeholder="Enter function in terms of x">
-    <p>Specify the range for x-values:</p>
-    <input type="number" id="xMin" placeholder="Min x-value" value="-10">
-    <input type="number" id="xMax" placeholder="Max x-value" value="10">
-    <button onclick="findExtrema()">Find Extrema</button>
-    <p id="results"></p>
-    <div id="graph"></div>
-  </div>
 
+<body>
+  <nav class="navbar">
+    <a href="../main/index.html" class="nav-logo">
+      <i class="fas fa-square-root-variable"></i>
+      MathLab Pro
+    </a>
+    <div class="nav-links">
+      <a href="../main/index.html" class="nav-link">Home</a>
+      <a href="../main/index.html#tools" class="nav-link">Tools</a>
+    </div>
+  </nav>
+  <div class="bg-glow"></div>
+  <div class="container">
+    <main class="main-card">
+      <h1 class="section-title">Global Extrema Finder</h1>
+      <p class="section-subtitle">Identifies critical points and handles discontinuities (e.g., asymptotes).</p>
+      <form id="calcForm">
+        <div class="form-group">
+          <label class="form-label">Function $f(x)$</label>
+          <input type="text" id="func" class="input-field" value="tan(x)" placeholder="e.g. x^3 - 3x">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="form-group">
+            <label class="form-label">X Min</label>
+            <input type="number" id="xMin" class="input-field" value="-5" step="any">
+          </div>
+          <div class="form-group">
+            <label class="form-label">X Max</label>
+            <input type="number" id="xMax" class="input-field" value="5" step="any">
+          </div>
+        </div>
+        <button type="button" id="calcBtn" class="btn-gradient" style="width: 100%;" onclick="analyze()">
+          <i class="fas fa-search-location"></i> Analyze Function
+        </button>
+      </form>
+      <div id="resultCard" class="result-card">
+        <div id="extremaList" class="extrema-list"></div>
+        <div id="graph"></div>
+      </div>
+    </main>
+  </div>
   <script>
-    function findExtrema() {
-      const input = document.getElementById('functionInput').value;
+    async function analyze() {
+      const btn = document.getElementById('calcBtn');
+      const card = document.getElementById('resultCard');
+      const list = document.getElementById('extremaList');
+      const expr = document.getElementById('func').value;
       const xMin = parseFloat(document.getElementById('xMin').value);
       const xMax = parseFloat(document.getElementById('xMax').value);
-      const math = window.math;
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finding Critical Points...';
+      card.classList.remove('visible');
+      await new Promise(r => setTimeout(r, 600));
 
       try {
-        // Parse the function
-        const f = math.compile(input);
+        const node = math.parse(expr);
+        const f = node.compile();
+        const dNode = math.derivative(expr, 'x');
+        const df = dNode.compile();
 
-        // Generate x values, excluding points close to vertical asymptotes for tan(x)
-        const xValues = [];
-        const yValues = [];
-        for (let x = xMin; x <= xMax; x += 0.01) {
-          const y = f.evaluate({ x });
-          if (Math.abs(y) < 100) { // Exclude points where y-value is too large
-            xValues.push(x);
-            yValues.push(y);
-          }
-        }
-
-        // Calculate derivative
-        const derivative = math.derivative(input, 'x').toString();
-        const d = math.compile(derivative);
-
-        // Find extrema
+        const steps = 1000;
+        const stepSize = (xMax - xMin) / steps;
+        const traces = [];
+        let currentTraceX = [];
+        let currentTraceY = [];
         const extrema = [];
-        for (let i = 1; i < xValues.length - 1; i++) {
-          const x = xValues[i];
-          const y = f.evaluate({ x });
-          const slopePrev = d.evaluate({ x: xValues[i - 1] });
-          const slopeNext = d.evaluate({ x: xValues[i + 1] });
 
-          // Check for a change in slope
-          if (slopePrev * slopeNext <= 0 && Math.abs(slopePrev) < 1000 && Math.abs(slopeNext) < 1000) {
-            extrema.push({ x, y, type: slopePrev > 0 ? 'Minima' : 'Maxima' });
-          }
+        for (let i = 0; i <= steps; i++) {
+          const x = xMin + i * stepSize;
+          try {
+            const y = f.evaluate({ x });
+            const isFinite = Math.abs(y) < 100; // Threshold for asymptotes
+
+            if (isFinite) {
+              currentTraceX.push(x);
+              currentTraceY.push(y);
+            } else {
+              if (currentTraceX.length > 0) {
+                traces.push({ x: currentTraceX, y: currentTraceY, mode: 'lines', line: { color: '#3b82f6' }, showlegend: false });
+                currentTraceX = [];
+                currentTraceY = [];
+              }
+            }
+
+            // Check for extrema using derivative sign change
+            if (i > 0 && i < steps) {
+              const prevX = x - stepSize;
+              const nextX = x + stepSize;
+              const prevSlope = df.evaluate({ x: prevX });
+              const currSlope = df.evaluate({ x });
+              const nextSlope = df.evaluate({ x: nextX });
+
+              if (prevSlope * currSlope <= 0 && Math.abs(currSlope) < 1) {
+                const isMin = prevSlope < 0 && nextSlope > 0;
+                const isMax = prevSlope > 0 && nextSlope < 0;
+                if (isMin || isMax) {
+                  extrema.push({ x, y, type: isMax ? 'Max' : 'Min' });
+                }
+              }
+            }
+          } catch (e) { }
         }
 
-        // Display results
-        const results = extrema
-          .map(e => `${e.type}: (${e.x.toFixed(2)}, ${e.y.toFixed(2)})`)
-          .join('<br>');
+        if (currentTraceX.length > 0) {
+          traces.push({ x: currentTraceX, y: currentTraceY, mode: 'lines', line: { color: '#3b82f6' }, showlegend: false });
+        }
 
-        document.getElementById('results').innerHTML = `<b>Results:</b><br>${results}`;
+        const uniqueExtrema = [];
+        extrema.forEach(e => {
+          if (!uniqueExtrema.find(ue => Math.abs(ue.x - e.x) < stepSize * 5)) {
+            uniqueExtrema.push(e);
+          }
+        });
 
-        // Plot the graph
-        const extremaPoints = {
-          x: extrema.map(e => e.x),
-          y: extrema.map(e => e.y),
-          mode: 'markers+text',
-          type: 'scatter',
-          name: 'Extrema',
-          text: extrema.map(e => `(${e.x.toFixed(2)}, ${e.y.toFixed(2)})`),
-          textposition: 'top center',
-          marker: { color: 'red', size: 10 }
-        };
+        let listHtml = '';
+        uniqueExtrema.forEach(e => {
+          listHtml += `<div class="extrema-item">
+                        <span class="type-label ${e.type === 'Max' ? 'max' : 'min'}">${e.type}</span>
+                        <span>(${e.x.toFixed(2)}, ${e.y.toFixed(2)})</span>
+                    </div>`;
+        });
+        list.innerHTML = listHtml || '<p style="color: var(--text-secondary);">No relative extrema found in range.</p>';
 
-        const functionGraph = {
-          x: xValues,
-          y: yValues,
-          mode: 'lines',
-          name: 'Function'
-        };
+        if (uniqueExtrema.length > 0) {
+          traces.push({
+            x: uniqueExtrema.map(e => e.x),
+            y: uniqueExtrema.map(e => e.y),
+            mode: 'markers',
+            marker: { color: '#ef4444', size: 10, symbol: 'diamond' },
+            name: 'Extrema'
+          });
+        }
 
         const layout = {
-          title: 'Function with Maxima and Minima',
-          xaxis: { title: 'x' },
-          yaxis: { title: 'f(x)', range: [-10, 10] }, // Limit y-axis range
-          showlegend: true
+          paper_bgcolor: 'rgba(0,0,0,0)',
+          plot_bgcolor: 'rgba(0,0,0,0)',
+          font: { color: '#f8fafc', family: 'Poppins' },
+          margin: { t: 10, r: 10, b: 40, l: 40 },
+          xaxis: { gridcolor: 'rgba(255,255,255,0.1)', range: [xMin, xMax] },
+          yaxis: { gridcolor: 'rgba(255,255,255,0.1)', range: [-10, 10] }
         };
 
-        Plotly.newPlot('graph', [functionGraph, extremaPoints], layout);
-      } catch (error) {
-        alert('Invalid function or error in processing. Please try again!');
+        Plotly.newPlot('graph', traces, layout, { responsive: true });
+        card.classList.add('visible');
+      } catch (e) {
+        alert("Error: " + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-search-location"></i> Analyze Function';
       }
     }
-
-    // Ensure Plotly is loaded properly
-    window.addEventListener('load', () => {
-      if (!window.Plotly) {
-        alert('Failed to load Plotly.js library. Please check your internet connection or try again later.');
-      }
-    });
+    window.onload = analyze;
   </script>
 </body>
+
 </html>

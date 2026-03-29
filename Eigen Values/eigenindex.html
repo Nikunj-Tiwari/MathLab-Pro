@@ -1,123 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matrix Eigenvalues Calculator</title>
+    <title>Eigenvalues Calculator | MathLab Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../main/global.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 0;
-            background-color: #f4f4f9;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: #fff;
+        .matrix-grid {
+            display: grid;
+            gap: 10px;
+            margin: 20px 0;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--glass-border);
         }
-        input, button {
+
+        .matrix-grid input {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            text-align: center;
         }
-        button {
-            background-color: #28a745;
-            color: white;
-            cursor: pointer;
+
+        .eigen-badge {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--accent-color);
+            padding: 15px;
+            border-radius: var(--radius-sm);
+            text-align: center;
+            min-width: 140px;
         }
-        button:hover {
-            background-color: #218838;
+
+        .eigen-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            text-transform: uppercase;
         }
-        .matrix-input {
-            margin: 10px 0;
-        }
-        .output {
-            background: #f8f9fa;
-            padding: 10px;
-            margin-top: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            word-wrap: break-word;
+
+        .eigen-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
         }
     </style>
 </head>
+
 <body>
-    <h1>Matrix Eigenvalues Calculator</h1>
-    <div class="container">
-        <input type="number" id="matrixOrder" placeholder="Enter matrix order (n)" min="1">
-        <button onclick="generateMatrixInput()">Generate Matrix Input</button>
-        <div id="matrixInputContainer" class="matrix-input"></div>
-        <button onclick="calculateEigenvalues()">Calculate Eigenvalues</button>
-        <div id="output" class="output"></div>
+    <nav class="navbar">
+        <a href="../main/index.html" class="nav-logo">
+            <i class="fas fa-square-root-variable"></i>
+            MathLab Pro
+        </a>
+        <div class="nav-links">
+            <a href="../main/index.html" class="nav-link">Home</a>
+            <a href="../main/index.html#tools" class="nav-link">Tools</a>
+        </div>
+    </nav>
+
+    <div class="bg-glow"></div>
+
+    <div class="container" style="max-width: 800px;">
+        <main class="main-card">
+            <h1 class="section-title">Eigenvalues Finder</h1>
+            <p class="section-subtitle">Compute real and complex eigenvalues for square matrices.</p>
+
+            <div class="form-group">
+                <label class="form-label">Matrix Dimension (n)</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="dim" class="input-field" value="3" min="2" max="6">
+                    <button class="btn-gradient" onclick="generate()" style="white-space: nowrap;">Set Size</button>
+                </div>
+            </div>
+
+            <div id="grid" class="matrix-grid"></div>
+
+            <button type="button" id="calcBtn" class="btn-gradient" style="width: 100%; display: none;"
+                onclick="calculate()">
+                <i class="fas fa-microchip"></i> Calculate Eigenvalues
+            </button>
+
+            <div id="resultCard" class="result-card">
+                <h3 style="margin-bottom: 20px;">Results</h3>
+                <div id="resultContent" style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
+                </div>
+            </div>
+        </main>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
     <script>
-        function generateMatrixInput() {
-            const n = parseInt(document.getElementById('matrixOrder').value);
-            const container = document.getElementById('matrixInputContainer');
-            container.innerHTML = '';
-
-            if (n < 1 || isNaN(n)) {
-                alert("Please enter a valid matrix order (n > 0).");
-                return;
+        function generate() {
+            const n = parseInt(document.getElementById('dim').value);
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            grid.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+            for (let i = 0; i < n * n; i++) {
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.className = 'input-field';
+                input.value = (i % (n + 1) === 0) ? '1' : '0'; // Identity by default
+                grid.appendChild(input);
             }
-
-            for (let i = 0; i < n; i++) {
-                const rowDiv = document.createElement('div');
-                rowDiv.textContent = `Row ${i + 1}: `;
-                for (let j = 0; j < n; j++) {
-                    const input = document.createElement('input');
-                    input.type = 'number';
-                    input.placeholder = `a[${i + 1},${j + 1}]`;
-                    input.style.margin = '2px';
-                    rowDiv.appendChild(input);
-                }
-                container.appendChild(rowDiv);
-            }
+            document.getElementById('calcBtn').style.display = 'block';
         }
 
-        function calculateEigenvalues() {
-            const n = parseInt(document.getElementById('matrixOrder').value);
-            const container = document.getElementById('matrixInputContainer');
-            const inputs = container.querySelectorAll('input');
-            const matrix = [];
-            let row = [];
+        async function calculate() {
+            const n = parseInt(document.getElementById('dim').value);
+            const inputs = document.querySelectorAll('#grid input');
+            const btn = document.getElementById('calcBtn');
+            const card = document.getElementById('resultCard');
+            const content = document.getElementById('resultContent');
 
-            // Collect matrix values
-            inputs.forEach((input, index) => {
-                row.push(parseFloat(input.value) || 0);
-                if ((index + 1) % n === 0) {
-                    matrix.push(row);
-                    row = [];
-                }
-            });
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+            card.classList.remove('visible');
 
-            if (matrix.length !== n || matrix.some(r => r.length !== n)) {
-                document.getElementById('output').textContent = "Invalid matrix. Please enter all values.";
-                return;
-            }
+            await new Promise(r => setTimeout(r, 600));
 
             try {
-                // Eigenvalue calculation using numeric.js
-                const eigenvalues = numeric.eig(matrix).lambda.x;
-                document.getElementById('output').textContent = `Eigenvalues: ${eigenvalues.join(', ')}`;
-            } catch (error) {
-                document.getElementById('output').textContent = "Error calculating eigenvalues: " + error.message;
+                const matrix = [];
+                for (let i = 0; i < n; i++) {
+                    const row = [];
+                    for (let j = 0; j < n; j++) row.push(parseFloat(inputs[i * n + j].value) || 0);
+                    matrix.push(row);
+                }
+
+                const ev = numeric.eig(matrix);
+                let html = '';
+
+                ev.lambda.x.forEach((re, i) => {
+                    const im = ev.lambda.y ? ev.lambda.y[i] : 0;
+                    let valStr;
+                    if (Math.abs(im) < 1e-10) valStr = re.toFixed(4);
+                    else valStr = `${re.toFixed(4)} ${im > 0 ? '+' : '-'} ${Math.abs(im).toFixed(4)}i`;
+
+                    html += `
+                        <div class="eigen-badge">
+                            <div class="eigen-label">λ${i + 1}</div>
+                            <div class="eigen-value">${valStr}</div>
+                        </div>
+                    `;
+                });
+
+                content.innerHTML = html;
+                card.classList.add('visible');
+            } catch (e) {
+                content.innerHTML = `<div style="color: #ef4444; width: 100%; text-align: center;">${e.message}</div>`;
+                card.classList.add('visible');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-microchip"></i> Calculate Eigenvalues';
             }
         }
+
+        window.onload = generate;
     </script>
 </body>
+
 </html>

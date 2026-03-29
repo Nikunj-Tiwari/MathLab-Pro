@@ -1,64 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Characteristic Equation Calculator</title>
-    <script>
-        function calculateCharacteristicEquation() {
-            // Get the matrix input from the user
-            const matrix = [
-                [parseFloat(document.getElementById('a11').value), parseFloat(document.getElementById('a12').value), parseFloat(document.getElementById('a13').value)],
-                [parseFloat(document.getElementById('a21').value), parseFloat(document.getElementById('a22').value), parseFloat(document.getElementById('a23').value)],
-                [parseFloat(document.getElementById('a31').value), parseFloat(document.getElementById('a32').value), parseFloat(document.getElementById('a33').value)]
-            ];
-
-            // Calculate the trace of the matrix (sum of diagonal elements)
-            const trace = matrix[0][0] + matrix[1][1] + matrix[2][2];
-
-            // Calculate the determinant of the matrix (A)
-            const detA = matrix[0][0] * (matrix[1][1] * matrix[2][2] - matrix[1][2] * matrix[2][1])
-                       - matrix[0][1] * (matrix[1][0] * matrix[2][2] - matrix[1][2] * matrix[2][0])
-                       + matrix[0][2] * (matrix[1][0] * matrix[2][1] - matrix[1][1] * matrix[2][0]);
-
-            // Calculate the sum of 2x2 minors
-            const sumOfMinors = matrix[0][0] * (matrix[1][1] * matrix[2][2] - matrix[1][2] * matrix[2][1])
-                                - matrix[0][1] * (matrix[1][0] * matrix[2][2] - matrix[1][2] * matrix[2][0])
-                                + matrix[0][2] * (matrix[1][0] * matrix[2][1] - matrix[1][1] * matrix[2][0]);
-
-            // Construct the characteristic equation
-            const lambda = 'λ';
-            const characteristicPoly = `${lambda}^3 - ${trace}${lambda}^2 + ${sumOfMinors}${lambda} - ${detA}`;
-
-            // Display the characteristic equation
-            document.getElementById('result').innerText = `The characteristic equation is: ${characteristicPoly} = 0`;
+    <title>Characteristic Equation | MathLab Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../main/global.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <style>
+        .matrix-input-grid {
+            display: grid;
+            gap: 12px;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--glass-border);
         }
-    </script>
-</head>
-<body>
-    <h1>Characteristic Equation Calculator</h1>
 
-    <h2>Enter the 3x3 Matrix:</h2>
-    <table>
-        <tr>
-            <td><input type="number" id="a11" placeholder="a11" required></td>
-            <td><input type="number" id="a12" placeholder="a12" required></td>
-            <td><input type="number" id="a13" placeholder="a13" required></td>
-        </tr>
-        <tr>
-            <td><input type="number" id="a21" placeholder="a21" required></td>
-            <td><input type="number" id="a22" placeholder="a22" required></td>
-            <td><input type="number" id="a23" placeholder="a23" required></td>
-        </tr>
-        <tr>
-            <td><input type="number" id="a31" placeholder="a31" required></td>
-            <td><input type="number" id="a32" placeholder="a32" required></td>
-            <td><input type="number" id="a33" placeholder="a33" required></td>
-        </tr>
-    </table>
-    <br>
-    <button onclick="calculateCharacteristicEquation()">Calculate Characteristic Equation</button>
-    <br><br>
-    <p id="result"></p>
+        .matrix-input-grid input {
+            text-align: center;
+        }
+
+        .equation-display {
+            font-size: 1.5rem;
+            text-align: center;
+            font-family: 'Times New Roman', Times, serif;
+            font-style: italic;
+            color: var(--accent-color);
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="../main/index.html" class="nav-logo">
+            <i class="fas fa-square-root-variable"></i>
+            MathLab Pro
+        </a>
+        <div class="nav-links">
+            <a href="../main/index.html" class="nav-link">Home</a>
+            <a href="../main/index.html#tools" class="nav-link">Tools</a>
+        </div>
+    </nav>
+
+    <div class="bg-glow"></div>
+
+    <div class="container" style="max-width: 600px;">
+        <main class="main-card">
+            <h1 class="section-title">Characteristic Equation</h1>
+            <p class="section-subtitle">Generate the symbolic characteristic polynomial $P(\lambda) = \det(A - \lambda
+                I) = 0$.</p>
+
+            <div class="form-group">
+                <label class="form-label">Matrix Size</label>
+                <select id="size" class="input-field" onchange="generate()">
+                    <option value="2">2 × 2 Matrix</option>
+                    <option value="3" selected>3 × 3 Matrix</option>
+                </select>
+            </div>
+
+            <div id="grid" class="matrix-input-grid"></div>
+
+            <button type="button" id="calcBtn" class="btn-gradient" style="width: 100%;" onclick="solve()">
+                <i class="fas fa-equals"></i> Generate Equation
+            </button>
+
+            <div id="resultCard" class="result-card">
+                <h3 style="margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                    Polynomial</h3>
+                <div id="resultOutput" class="equation-display"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function generate() {
+            const n = parseInt(document.getElementById('size').value);
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            grid.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+            grid.style.maxWidth = `${n * 80 + 40}px`;
+            for (let i = 0; i < n * n; i++) {
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.className = 'input-field';
+                input.value = (i % (n + 1) === 0) ? '1' : '0';
+                grid.appendChild(input);
+            }
+        }
+
+        async function solve() {
+            const n = parseInt(document.getElementById('size').value);
+            const inputs = document.querySelectorAll('#grid input');
+            const btn = document.getElementById('calcBtn');
+            const output = document.getElementById('resultOutput');
+            const card = document.getElementById('resultCard');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Expanding Determinant...';
+            card.classList.remove('visible');
+
+            await new Promise(r => setTimeout(r, 600));
+
+            try {
+                const val = (i, j) => parseFloat(inputs[i * n + j].value) || 0;
+                let eq = "";
+
+                if (n === 2) {
+                    const tr = val(0, 0) + val(1, 1);
+                    const det = val(0, 0) * val(1, 1) - val(0, 1) * val(1, 0);
+                    eq = "λ²";
+                    eq += tr >= 0 ? ` - ${tr.toFixed(2)}λ` : ` + ${Math.abs(tr).toFixed(2)}λ`;
+                    eq += det >= 0 ? ` + ${det.toFixed(2)}` : ` - ${Math.abs(det).toFixed(2)}`;
+                } else {
+                    const s1 = val(0, 0) + val(1, 1) + val(2, 2);
+                    const s2 = (val(0, 0) * val(1, 1) - val(0, 1) * val(1, 0)) +
+                        (val(1, 1) * val(2, 2) - val(1, 2) * val(2, 1)) +
+                        (val(0, 0) * val(2, 2) - val(0, 2) * val(2, 0));
+                    const det = math.det([[val(0, 0), val(0, 1), val(0, 2)],
+                    [val(1, 0), val(1, 1), val(1, 2)],
+                    [val(2, 0), val(2, 1), val(2, 2)]]);
+                    eq = "λ³";
+                    eq += s1 >= 0 ? ` - ${s1.toFixed(2)}λ²` : ` + ${Math.abs(s1).toFixed(2)}λ²`;
+                    eq += s2 >= 0 ? ` + ${s2.toFixed(2)}λ` : ` - ${Math.abs(s2).toFixed(2)}λ`;
+                    eq += det >= 0 ? ` - ${det.toFixed(2)}` : ` + ${Math.abs(det).toFixed(2)}`;
+                }
+
+                output.innerHTML = eq + " = 0";
+                card.classList.add('visible');
+            } catch (e) {
+                output.innerHTML = `<span style="font-size: 1rem; color: #ef4444;">${e.message}</span>`;
+                card.classList.add('visible');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-calculator"></i> Generate Equation';
+            }
+        }
+
+        window.onload = generate;
+    </script>
 </body>
+
 </html>
